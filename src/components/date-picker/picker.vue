@@ -229,6 +229,7 @@
                     active: false
                 },
                 internalFocus: false,
+                visualValue: '',
             };
         },
         computed: {
@@ -266,9 +267,6 @@
             transition () {
                 const bottomPlaced = this.placement.match(/^bottom/);
                 return bottomPlaced ? 'slide-up' : 'slide-down';
-            },
-            visualValue() {
-                return this.formatDate(this.internalValue);
             },
             isConfirm(){
                 return this.confirm || this.type === 'datetime' || this.type === 'datetimerange' || this.multiple;
@@ -693,6 +691,16 @@
                 const oldValue = JSON.stringify(before);
                 const shouldEmitInput = newValue !== oldValue || typeof now !== typeof before;
                 if (shouldEmitInput) this.$emit('input', now); // to update v-model
+            },
+            internalValue: {
+                immediate: true,
+                handler() {
+                    // FIXME BY CAIWC 2018-12-12 先将visualValue置为""以触发input的变更, 解决this.formatDate('2018-12-12')与this.formatDate('2018-12-1222')得出的值相等导致界面显示为2018-12-1222
+                    this.visualValue = "";
+                    this.$nextTick(function() {
+                        this.visualValue = this.formatDate(this.internalValue);	
+                    })
+                }
             },
         },
         mounted () {
